@@ -34,9 +34,83 @@ class CreateCinemaSchema extends Migration
      * As a user I want to know where I'm sitting on my ticket
      * As a cinema owner I dont want to configure the seating for every show
      */
+
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('movies', function($table) {
+            $table->increments('id');
+            $table->string('title');
+            $table->timestamps();
+        });
+
+        Schema::create('shows', function($table) {
+            $table->increments('id');
+            $table->integer('movie_id')->unsigned();
+            $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
+            $table->time('time');
+            $table->date('date');
+            $table->timestamps();
+        });
+
+        Schema::create('booking', function($table) {
+            $table->increments('id');
+            $table->integer("number_of_seats");
+            $table->enum('status', ['paid', 'pending']);
+
+            $table->integer('show_id')->unsigned();
+            $table->foreign('show_id')->references('id')->on('shows')->onDelete('cascade');
+
+            $table->integer('user_id')->unsigned();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
+            $table->timestamps();
+        });
+
+        Schema::create('showrooms', function($table) {
+            $table->increments('id');
+            $table->string('hall_name');
+            $table->integer('total_seats');
+            $table->timestamps();
+        });
+
+        Schema::create('showrooms_showseat', function($table) {
+            $table->increments('id');
+            $table->integer('seat_number');
+            // multiple type
+            $table->enum('type', ['avalaible', 'sold']);
+
+            $table->integer('showroom_id')->unsigned();
+            $table->foreign('showroom_id')->references('id')->on('showrooms')->onDelete('cascade');
+
+            $table->timestamps();
+        });
+
+        Schema::create('showseat', function($table) {
+            $table->increments('id');
+            $table->enum('status', ['vip', 'premium']);
+            $table->integer('booking_id')->unsigned();
+            $table->foreign('booking_id')->references('id')->on('booking')->onDelete('cascade');
+
+            $table->integer('show_id')->unsigned();
+            $table->foreign('show_id')->references('id')->on('shows')->onDelete('cascade');
+
+            $table->integer('showroom_seat_id')->unsigned();
+            $table->foreign('showroom_seat_id')->references('id')->on('showrooms_seat')->onDelete('cascade');
+
+            $table->timestamps();
+        });
+
+
+        Schema::create('payment', function($table) {
+            $table->increments('id');
+            $table->integer("amount");
+            $table->integer("discount");
+
+            $table->integer('booking_id')->unsigned();
+            $table->foreign('booking_id')->references('id')->on('booking')->onDelete('cascade');
+
+            $table->timestamps();
+        });
     }
 
     /**
